@@ -45,16 +45,26 @@ const flowSchedule = addKeyword(EVENTS.ACTION)
 
     const promptFilter = generatePromptFilter(history);
 
-    const { date } = await ai.desiredDateFn([
-      {
-        role: "system",
-        content: promptFilter,
-      },
-    ]);
+    let hasError = true;
+    let desiredDate = new Date();
+    while (hasError) {
+      const { date } = await ai.desiredDateFn([
+        {
+          role: "system",
+          content: promptFilter,
+        },
+      ]);
 
-    console.log({ aiDate: date });
+      console.log({ aiDate: date });
 
-    const desiredDate = parse(date, "yyyy/MM/dd HH:mm:ss", new Date());
+      try {
+        desiredDate = parse(date, "yyyy/MM/dd HH:mm:ss", new Date());
+        hasError = false;
+      } catch (e) {
+        console.error(e);
+        hasError = true;
+      }
+    }
 
     const isDateAvailable = listParse.every(
       ({ startDate, endDate }) =>
@@ -86,8 +96,6 @@ const flowSchedule = addKeyword(EVENTS.ACTION)
   .addAction(
     { capture: true },
     async ({ body }, { gotoFlow, flowDynamic, state }) => {
-      console.log("what: ", body);
-
       if (body.toLowerCase().includes("si")) {
         return gotoFlow(flowConfirm);
       }

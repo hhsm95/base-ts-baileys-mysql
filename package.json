@@ -13,7 +13,7 @@
   "keywords": [],
   "dependencies": {
     "@builderbot/bot": "dev",
-    "@builderbot/database-mysql": "dev",
+    "@builderbot/database-mysql": "1.0.23-alpha.0",
     "@builderbot/provider-baileys": "dev",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
