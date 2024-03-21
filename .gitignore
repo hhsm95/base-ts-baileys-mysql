@@ -1,0 +1,9 @@
+.env
+node_modules/
+.vscode/
+bot_sessions/
+bot.qr.png
+baileys.log
+core.class.log
+package-lock.json
+queue.class.log
