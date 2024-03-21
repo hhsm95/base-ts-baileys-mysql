@@ -9,8 +9,8 @@ dependencies:
     specifier: dev
     version: 1.0.21-alpha.0
   '@builderbot/database-mysql':
-    specifier: dev
-    version: 1.0.21-alpha.0
+    specifier: 1.0.23-alpha.0
+    version: 1.0.23-alpha.0
   '@builderbot/provider-baileys':
     specifier: dev
     version: 1.0.21-alpha.0
@@ -74,10 +74,23 @@ packages:
       - debug
     dev: false
 
-  /@builderbot/database-mysql@1.0.21-alpha.0:
-    resolution: {integrity: sha512-8/e1J88JiKQNwPr3O6IEC/sKFP+OFuTo4pmI1jiISKRwO805zCGUj8T5ccN8CA5CbkSsBznJOIKG7mTQmG9qdA==}
+  /@builderbot/bot@1.0.23-alpha.0:
+    resolution: {integrity: sha512-R3uodj0d+FrsqsgaBa/SOdzK9uRfTLSEpg4WF7wcObYeAjNTiDEp7lTMrPkokpROx16VF21xhEYnMRy92RULuQ==}
     dependencies:
-      '@builderbot/bot': 1.0.21-alpha.0
+      '@ffmpeg-installer/ffmpeg': 1.1.0
+      fluent-ffmpeg: 2.1.2
+      follow-redirects: 1.15.6
+      mime-types: 2.1.35
+      picocolors: 1.0.0
+      sharp: 0.33.2
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
+  /@builderbot/database-mysql@1.0.23-alpha.0:
+    resolution: {integrity: sha512-PiPUWrLDSvogfo4t34sABbim1bA2xUh5GE/JNFPtLjh/s/PPYXL2+dLTxa+DvZ1tonbLO53Sc/sGkfgzOkpS5A==}
+    dependencies:
+      '@builderbot/bot': 1.0.23-alpha.0
       mysql2: 2.3.3
     transitivePeerDependencies:
       - debug

@@ -4,10 +4,6 @@ import { addMinutes, format } from "date-fns";
 import { appToCalendar } from "src/services/calendar";
 import { DELAYS, NUM_SERVICES, SERVICES } from "src/utils/constants";
 
-const DURATION_MEET = process.env.DURATION_MEET ?? 45;
-/**
- * Encargado de pedir los datos necesarios para registrar el evento en el calendario
- */
 const flowConfirm = addKeyword(EVENTS.ACTION)
   .addAction(async (_, { flowDynamic }) => {
     await flowDynamic("Ok, voy a pedirte unos datos para confirmar la cita", {
@@ -65,6 +61,7 @@ const flowConfirm = addKeyword(EVENTS.ACTION)
         phone: ctx.from,
         email: ctx.body,
       };
+      console.log(dateObject);
 
       await appToCalendar(dateObject);
 
