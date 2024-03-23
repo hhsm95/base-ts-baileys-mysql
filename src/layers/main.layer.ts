@@ -1,4 +1,3 @@
-import { BotContext, BotMethods } from "@builderbot/bot/dist/types";
 import { getHistoryParse } from "../utils/handleHistory";
 import AIClass from "../services/ai";
 import { flowSeller } from "../flows/seller.flow";
@@ -16,10 +15,7 @@ const PROMPT_DISCRIMINATOR = `### Historial de Conversación (Vendedor/Cliente) 
 
 Por favor, clasifica la siguiente conversación según la intención del usuario.`;
 
-export default async (
-  _: BotContext,
-  { state, gotoFlow, extensions }: BotMethods
-) => {
+export default async (ctx, { state, gotoFlow, extensions, provider }) => {
   const ai = extensions.ai as AIClass;
   const history = getHistoryParse(state);
   const prompt = PROMPT_DISCRIMINATOR;

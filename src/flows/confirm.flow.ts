@@ -3,30 +3,31 @@ import { clearHistory } from "../utils/handleHistory";
 import { addMinutes, format } from "date-fns";
 import { appToCalendar } from "src/services/calendar";
 import { DELAYS, NUM_SERVICES, SERVICES } from "src/utils/constants";
+import emailRegexSafe from "email-regex-safe";
 
 const flowConfirm = addKeyword(EVENTS.ACTION)
-  .addAction(async (_, { flowDynamic }) => {
-    await flowDynamic("Ok, voy a pedirte unos datos para confirmar la cita", {
-      delay: DELAYS.SHORT_MSG,
-    });
-    await flowDynamic("¿Cuál es el servicio que deseas agendar?", {
-      delay: DELAYS.SHORT_MSG,
-    });
+  .addAction(async (ctx, { flowDynamic, provider }) => {
+    setTimeout(() => {
+      provider.sendPresenceUpdate(ctx.key.remoteJid, "composing");
+    }, 200);
     await flowDynamic(
-      "Por favor responde con el número de alguno de los siguientes:",
-      { delay: DELAYS.SHORT_MSG }
+      [
+        "Ok, voy a pedirte unos datos para confirmar la cita",
+        "¿Cuál es el servicio que deseas agendar?",
+        "Por favor responde con el número de alguno de los siguientes:",
+        "1. Corte de cabello\n2. Alisado de cabello\n3. Manicure\n4. Pedicure",
+      ],
+      {
+        delay: DELAYS.SHORT_MSG,
+      }
     );
-    await flowDynamic("1. Corte de cabello", { delay: DELAYS.SHORT_MSG });
-    await flowDynamic("2. Alisado de cabello", { delay: DELAYS.SHORT_MSG });
-    await flowDynamic("3. Manicure", { delay: DELAYS.SHORT_MSG });
-    await flowDynamic("4. Pedicure", { delay: DELAYS.SHORT_MSG });
   })
   .addAction(
     { capture: true },
     async (ctx, { state, flowDynamic, endFlow, fallBack }) => {
       if (ctx.body.toLocaleLowerCase().includes("cancelar")) {
         clearHistory(state);
-        return endFlow(`¿Como puedo ayudarte?`);
+        return endFlow("¿Cómo puedo ayudarte?");
       }
 
       if (!NUM_SERVICES.includes(ctx.body)) {
@@ -35,18 +36,40 @@ const flowConfirm = addKeyword(EVENTS.ACTION)
         );
       }
 
-      const name = ctx.name || "";
       const service = SERVICES[ctx.body].name;
       const duration = SERVICES[ctx.body].duration;
-      await state.update({ name, service, duration });
-      await flowDynamic(`Ultima pregunta ¿Cual es tu email?`);
+      await state.update({ service, duration });
+      await flowDynamic("¿A nombre de quién será la cita?", {
+        delay: DELAYS.SHORT_MSG,
+      });
     }
   )
   .addAction(
     { capture: true },
     async (ctx, { state, flowDynamic, fallBack }) => {
-      if (!ctx.body.includes("@")) {
-        return fallBack(`Debes ingresar un mail correcto`);
+      const name = ctx.body.trim();
+      if (name.length < 3) {
+        return fallBack("Debes ingresar un nombre válido");
+      }
+
+      await state.update({ name });
+      await flowDynamic(
+        [
+          `Gracias *${name}*`,
+          "Para enviarte un recordatorio, ¿cuál es tu email?",
+        ],
+        {
+          delay: DELAYS.SHORT_MSG,
+        }
+      );
+    }
+  )
+  .addAction(
+    { capture: true },
+    async (ctx, { state, flowDynamic, fallBack }) => {
+      const email = ctx.body.trim().toLowerCase();
+      if (!emailRegexSafe({ exact: true }).test(email)) {
+        return fallBack("Debes ingresar un email válido");
       }
 
       const duration = state.get("duration");
@@ -59,14 +82,20 @@ const flowConfirm = addKeyword(EVENTS.ACTION)
           "yyyy/MM/dd HH:mm:ss"
         ),
         phone: ctx.from,
-        email: ctx.body,
+        email: email,
       };
       console.log(dateObject);
 
       await appToCalendar(dateObject);
 
       clearHistory(state);
-      await flowDynamic("Listo! agendado Buen dia");
+      await flowDynamic(
+        [
+          "¡Listo! Tu cita fue agendada",
+          "Cualquier duda estamos para atenderte",
+        ],
+        { delay: DELAYS.SHORT_MSG }
+      );
     }
   );
 

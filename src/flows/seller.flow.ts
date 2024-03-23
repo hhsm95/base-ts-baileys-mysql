@@ -1,9 +1,12 @@
 import { addKeyword, EVENTS } from "@builderbot/bot";
+import { BaileysProvider as Provider } from "@builderbot/provider-baileys";
 import { generateTimer } from "../utils/generateTimer";
 import { getHistoryParse, handleHistory } from "../utils/handleHistory";
 import AIClass from "../services/ai";
 import { getFullCurrentDate } from "src/utils/currentDate";
 import { pdfQuery } from "src/services/pdf";
+import { BotMethods } from "@builderbot/bot/dist/types";
+import { DELAYS } from "src/utils/constants";
 
 const PROMPT_SELLER = `Como experto en ventas con aproximadamente 15 años de experiencia en embudos de ventas y generación de leads, tu tarea es mantener una conversación agradable, responder a las preguntas del cliente sobre nuestros productos y, finalmente, guiarlos para reservar una cita. Tus respuestas deben basarse únicamente en el contexto proporcionado:
 
@@ -38,7 +41,12 @@ export const generatePromptSeller = (history: string, database: string) => {
 };
 
 const flowSeller = addKeyword(EVENTS.ACTION)
-  .addAnswer(`⏱️`)
+  .addAction(async (ctx, { flowDynamic, provider }) => {
+    setTimeout(() => {
+      provider.sendPresenceUpdate(ctx.key.remoteJid, "composing");
+    }, 200);
+    await flowDynamic(`⏱️`);
+  })
   .addAction(async (ctx, { state, flowDynamic, extensions }) => {
     try {
       const ai = extensions.ai as AIClass;
@@ -56,12 +64,7 @@ const flowSeller = addKeyword(EVENTS.ACTION)
       ]);
 
       await handleHistory({ content: response, role: "assistant" }, state);
-      const chunks = response.split(".");
-      for (const chunk of chunks) {
-        await flowDynamic([
-          { body: chunk.trim(), delay: generateTimer(150, 250) },
-        ]);
-      }
+      await flowDynamic([{ body: response, delay: DELAYS.SHORT_MSG }]);
     } catch (err) {
       console.log(`[ERROR]:`, err);
       return;
